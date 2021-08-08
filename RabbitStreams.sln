@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "RabbitStreams", "RabbitStreams\RabbitStreams.fsproj", "{C37B3ED2-1F41-4649-ADF4-171334863454}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tests", "Tests\Tests.fsproj", "{C9641E33-1787-417D-B2CA-FC15DFABF0CB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C37B3ED2-1F41-4649-ADF4-171334863454}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C37B3ED2-1F41-4649-ADF4-171334863454}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C37B3ED2-1F41-4649-ADF4-171334863454}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C37B3ED2-1F41-4649-ADF4-171334863454}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9641E33-1787-417D-B2CA-FC15DFABF0CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9641E33-1787-417D-B2CA-FC15DFABF0CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9641E33-1787-417D-B2CA-FC15DFABF0CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9641E33-1787-417D-B2CA-FC15DFABF0CB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+EndGlobal
