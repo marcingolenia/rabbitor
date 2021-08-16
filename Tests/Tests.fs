@@ -30,9 +30,14 @@ type Bus =
         { Connection = connection
           PublishChannel = publishingChannel
           ConsumeChannels = [] }
-
+        
     interface IDisposable with
         member this.Dispose() = this.Connection.Dispose()
+        
+    static member InitializePublisher<'a> (bus: Bus) =
+        let name = typeof<'a>.FullName
+        bus.PublishChannel.ExchangeDeclare(name, ExchangeType.Fanout)
+        bus
 
     static member Subscribe<'a> handler bus =
         let handlerWrapped =
@@ -41,17 +46,25 @@ type Bus =
                     let event =
                         JsonConvert.DeserializeObject<'a>(Encoding.UTF8.GetString(delivery.Body.ToArray()))
                     handler event |> Async.StartAsTask :> Task)
-
         let channels =
-            [ 1 .. int PrefetchCount / 2 ]
+            [ 1 .. 1 ]// Think about parallelization later
             |> List.map
                 (fun _ ->
                     let channel = bus.Connection.CreateModel()
+                    channel.QueueDeclare(typeof<'a>.FullName, durable = true, exclusive = false, autoDelete = false) |> ignore
+                    channel.QueueDeclare($"{typeof<'a>.FullName}-stream",
+                                         autoDelete = false,
+                                         exclusive = false,
+                                         durable = true,
+                                         arguments = dict [ ("x-queue-type", "stream" :> obj) ]
+                                         ) |> ignore
+                    channel.QueueBind(typeof<'a>.FullName, typeof<'a>.FullName, "")
+                    channel.QueueBind($"{typeof<'a>.FullName}-stream", typeof<'a>.FullName, "")
                     channel.BasicQos(0u, PrefetchCount, true)
-                    let consumer = AsyncEventingBasicConsumer(channel)
+                    let consumer = AsyncEventingBasicConsumer channel
                     consumer.add_Received handlerWrapped
                     channel.BasicConsume(
-                        "my-queue",
+                        typeof<'a>.FullName,
                         true,
                         "tag",
                         null, //([ ("x-stream-offset", 3 :> obj) ] |> dict),
@@ -61,11 +74,35 @@ type Bus =
                     channel)
         { bus with ConsumeChannels = channels }
         
+    static member ReadStream<'a> handler offset (bus: Bus) =
+        let handlerWrapped (channel: IModel) =
+            AsyncEventHandler<BasicDeliverEventArgs>
+                (fun (sender: obj) (delivery: BasicDeliverEventArgs) ->
+                    let event = 
+                        JsonConvert.DeserializeObject<'a>(Encoding.UTF8.GetString(delivery.Body.ToArray()))
+                    async { 
+                        let! _ = handler event // check for error
+                        channel.BasicAck(delivery.DeliveryTag, false)
+                    } |> Async.StartAsTask :> Task)
+                
+        let channel = bus.Connection.CreateModel()
+        channel.BasicQos(0u, 1us, false)
+        let consumer = AsyncEventingBasicConsumer channel
+        consumer.add_Received (handlerWrapped channel)
+        channel.BasicConsume(
+                        $"{typeof<'a>.FullName}-stream",
+                        false,
+                        "tag",
+                        ([ ("x-stream-offset", offset) ] |> dict),
+                        consumer
+                    ) |> ignore
+        bus
+        
     static member Publish (bus: Bus) event =
         let bytes = event |> JsonConvert.SerializeObject
                           |> Encoding.UTF8.GetBytes
         bus.PublishChannel.BasicPublish(
-                exchange = "my-exchange",
+                exchange = event.GetType().DeclaringType.FullName,
                 routingKey = "",
                 basicProperties = null,
                 body = ReadOnlyMemory bytes
@@ -84,19 +121,17 @@ type Events =
 
 [<Fact>]
 let ``RabbitMq PubSub`` () =
-    let a = System.Threading.ThreadPool.GetMaxThreads()
-    let mutable handlerWasCalled = false
     let mutable handlingCount = 0
     let handler = (fun event ->
                     // This runs one by one. Fuck, check if rebus parallize and steal!
                     printfn $"Executing %A{event} START"
                     printfn $"Executing %A{event} END"
                     async {
-                        handlerWasCalled <- true
                         handlingCount <- handlingCount + 1
                         return Ok ()
                     })
     use bus = Bus.Connect("localhost")
+              |> Bus.InitializePublisher<Events>
               |> Bus.Subscribe<Events> handler
 
     [ 1 .. 1 ]
@@ -116,6 +151,25 @@ let ``RabbitMq PubSub`` () =
             Task.Delay(20000)
             |> Async.AwaitTask
             |> Async.RunSynchronously)
-
-    handlerWasCalled |> should equal true
+        
     handlingCount |> should equal 10
+
+
+[<Fact>]
+let ``RabbitMq Streams`` () =
+    let mutable handlingCount = 0
+    let handler = (fun event ->
+                    printfn $"Executing %A{event} START"
+                    printfn $"Executing %A{event} END"
+                    async {
+                        handlingCount <- handlingCount + 1
+                        return Ok ()
+                    })
+    use bus = Bus.Connect("localhost")
+              |> Bus.ReadStream<Events> handler 0
+    
+    Task.Delay(30000)
+    |> Async.AwaitTask
+    |> Async.RunSynchronously
+        
+    handlingCount |> should be (greaterThan 1)
