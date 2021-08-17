@@ -4,6 +4,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "RabbitStreams", "RabbitStre
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tests", "Tests\Tests.fsproj", "{C9641E33-1787-417D-B2CA-FC15DFABF0CB}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Contracts", "Contracts\Contracts.fsproj", "{B03A8C8B-FF39-43B9-845B-341E34F6CECF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,6 +20,10 @@ Global
 		{C9641E33-1787-417D-B2CA-FC15DFABF0CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9641E33-1787-417D-B2CA-FC15DFABF0CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9641E33-1787-417D-B2CA-FC15DFABF0CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B03A8C8B-FF39-43B9-845B-341E34F6CECF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B03A8C8B-FF39-43B9-845B-341E34F6CECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B03A8C8B-FF39-43B9-845B-341E34F6CECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B03A8C8B-FF39-43B9-845B-341E34F6CECF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

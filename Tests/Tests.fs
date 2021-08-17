@@ -1,6 +1,7 @@
 module Tests
 
 open System
+open System.Reflection
 open System.Text
 open Newtonsoft.Json
 open RabbitMQ.Client
@@ -8,12 +9,14 @@ open RabbitMQ.Client.Events
 open Xunit
 open System.Threading.Tasks
 open FsUnit.Xunit
+open Contracts
 
 // docker run --name rabbitor -d -p 15672:15672 -p 5672:5672 rabbitmq:3.9.1-management-alpine
 // docker exec rabbitor rabbitmq-plugins list
 // docker exec rabbitor rabbitmq-plugins enable rabbitmq_stream
-
-// BUS
+//    let registeredEvents = FSharpType.GetUnionCases(typeof<'a>)
+//                           |> Seq.map (fun case -> (case.GetFields().[0].PropertyType, case))
+//                           |> Seq.toList
 
 [<Literal>]
 let PrefetchCount = 4us
@@ -35,11 +38,19 @@ type Bus =
         member this.Dispose() = this.Connection.Dispose()
         
     static member InitializePublisher<'a> (bus: Bus) =
-        let name = typeof<'a>.FullName
-        bus.PublishChannel.ExchangeDeclare(name, ExchangeType.Fanout)
+        let exchangeName = typeof<'a>.FullName
+        bus.PublishChannel.ExchangeDeclare(exchangeName, ExchangeType.Fanout)
+        bus.PublishChannel.QueueDeclare($"{typeof<'a>.FullName}-stream",
+                                        autoDelete = false,
+                                        exclusive = false,
+                                        durable = true,
+                                        arguments = dict [ ("x-queue-type", "stream" :> obj) ]
+                                        ) |> ignore
+        bus.PublishChannel.QueueBind($"{typeof<'a>.FullName}-stream", exchangeName, "")
         bus
 
     static member Subscribe<'a> handler bus =
+        let queueName = $"{Assembly.GetExecutingAssembly().GetName().Name}_{typeof<'a>.FullName}"
         let handlerWrapped =
             AsyncEventHandler<BasicDeliverEventArgs>
                 (fun (sender: obj) (delivery: BasicDeliverEventArgs) ->
@@ -47,32 +58,28 @@ type Bus =
                         JsonConvert.DeserializeObject<'a>(Encoding.UTF8.GetString(delivery.Body.ToArray()))
                     handler event |> Async.StartAsTask :> Task)
         let channels =
-            [ 1 .. 1 ]// Think about parallelization later
+            [ 1 .. 1 ]// Within channel events are handled one by one. Rebus does parallelization per event type.
             |> List.map
                 (fun _ ->
                     let channel = bus.Connection.CreateModel()
-                    channel.QueueDeclare(typeof<'a>.FullName, durable = true, exclusive = false, autoDelete = false) |> ignore
-                    channel.QueueDeclare($"{typeof<'a>.FullName}-stream",
-                                         autoDelete = false,
-                                         exclusive = false,
+                    channel.QueueDeclare(queueName,
                                          durable = true,
-                                         arguments = dict [ ("x-queue-type", "stream" :> obj) ]
-                                         ) |> ignore
-                    channel.QueueBind(typeof<'a>.FullName, typeof<'a>.FullName, "")
-                    channel.QueueBind($"{typeof<'a>.FullName}-stream", typeof<'a>.FullName, "")
+                                         exclusive = false,
+                                         autoDelete = false) |> ignore
+                    channel.QueueBind(queueName, typeof<'a>.FullName, "")
                     channel.BasicQos(0u, PrefetchCount, true)
                     let consumer = AsyncEventingBasicConsumer channel
                     consumer.add_Received handlerWrapped
                     channel.BasicConsume(
-                        typeof<'a>.FullName,
+                        queueName,
                         true,
-                        "tag",
-                        null, //([ ("x-stream-offset", 3 :> obj) ] |> dict),
+                        "",
+                        null,
                         consumer
                     )
                     |> ignore
                     channel)
-        { bus with ConsumeChannels = channels }
+        { bus with ConsumeChannels = bus.ConsumeChannels @ channels }
         
     static member ReadStream<'a> handler offset (bus: Bus) =
         let handlerWrapped (channel: IModel) =
@@ -108,51 +115,32 @@ type Bus =
                 body = ReadOnlyMemory bytes
             )
 
-// EVENTS
-type ManKilled = { Name: string }
-type ManResurrected = { Name: string; When: DateTime }
-
-type Events =
-    | ManKilled of ManKilled
-    | ManResurrected of ManResurrected
-
-// Queue per event - mainly because of streams and single-threaded queue model
-// GetSream offset<Event> (int | timespan | int)
-
 [<Fact>]
 let ``RabbitMq PubSub`` () =
     let mutable handlingCount = 0
     let handler = (fun event ->
-                    // This runs one by one. Fuck, check if rebus parallize and steal!
                     printfn $"Executing %A{event} START"
                     printfn $"Executing %A{event} END"
                     async {
                         handlingCount <- handlingCount + 1
                         return Ok ()
                     })
+    
     use bus = Bus.Connect("localhost")
-              |> Bus.InitializePublisher<Events>
-              |> Bus.Subscribe<Events> handler
+              |> Bus.InitializePublisher<A.Events> // Can publish events for different bounded contexts
+              |> Bus.InitializePublisher<B.Events>
+              |> Bus.Subscribe<A.Events> handler // Can handle events from different bounded contexts
+              |> Bus.Subscribe<B.Events> handler
 
-    [ 1 .. 1 ]
-    |> List.iter
-        (fun i ->
-            Bus.Publish bus (ManKilled { Name = "Marcinek 1" })
-            Bus.Publish bus (ManKilled { Name = "Marcinek 2" })
-            Bus.Publish bus (ManKilled { Name = "Marcinek 3" })
-            Bus.Publish bus (ManKilled { Name = "Marcinek 4" })
-            Bus.Publish bus (ManKilled { Name = "Marcinek 5" })
-            Bus.Publish bus (ManKilled { Name = "Marcinek 6" })
-            Bus.Publish bus (ManKilled { Name = "Marcinek 7" })
-            Bus.Publish bus (ManKilled { Name = "Marcinek 8" })
-            Bus.Publish bus (ManKilled { Name = "Marcinek 9" })
-            Bus.Publish bus (ManKilled { Name = "Marcinek 10" })
-            
-            Task.Delay(20000)
-            |> Async.AwaitTask
-            |> Async.RunSynchronously)
+    Bus.Publish bus (B.ManAsked {| Name = "Marcin"; Question = "Skąd kk?" |})
+    Bus.Publish bus (B.ManAnswered {| Name = "Marcin"; Answer = "Skąd kk?"; When = DateTime.UtcNow |})
+    [ 1 .. 3 ] |> List.iter(fun i -> Bus.Publish bus (A.ManKilled { Name = $"Marcinek %i{i}" }))
+    
+    Task.Delay(5000)
+        |> Async.AwaitTask
+        |> Async.RunSynchronously
         
-    handlingCount |> should equal 10
+    handlingCount |> should equal 5
 
 
 [<Fact>]
@@ -166,9 +154,9 @@ let ``RabbitMq Streams`` () =
                         return Ok ()
                     })
     use bus = Bus.Connect("localhost")
-              |> Bus.ReadStream<Events> handler 0
+              |> Bus.ReadStream<A.Events> handler 0
     
-    Task.Delay(30000)
+    Task.Delay(5000)
     |> Async.AwaitTask
     |> Async.RunSynchronously
         
