@@ -8,12 +8,13 @@
         <Authors>Marcin Golenia</Authors>
         <Description>The opinionated F# friendly (I hope so) wrapper around rabbit C# SDK.</Description>
         <RepositoryUrl>https://github.com/marcingolenia/rabbitor</RepositoryUrl>
-        <PackageIconUrl>https://github.com/marcingolenia/rabbitor/raw/main/logo.png</PackageIconUrl>
-        <PackageLicenseUrl>https://github.com/marcingolenia/rabbitor/blob/main/LICENSE.md</PackageLicenseUrl>
+        <PackageIcon>icon.png</PackageIcon>
+        <license type="expression">MIT</license>
         <PackageReleaseNotes>Alpha</PackageReleaseNotes>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="Bus.fs" />
+        <None Include="../logo.png" Pack="true" PackagePath="/" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
