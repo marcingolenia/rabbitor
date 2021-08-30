@@ -1,4 +1,4 @@
-﻿module Bus
+﻿module Rabbitor.Bus
 
 open System
 open System.Reflection

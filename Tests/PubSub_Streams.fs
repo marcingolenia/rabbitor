@@ -5,6 +5,7 @@ open Tests.Contracts
 open Xunit
 open System.Threading.Tasks
 open FsUnit.Xunit
+open Rabbitor
 
 [<Fact>]
 let ``Subscribing and handling to published messages using different types of events works`` () =
