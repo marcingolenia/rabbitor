@@ -8,7 +8,7 @@
         <Authors>Marcin Golenia</Authors>
         <Description>The opinionated F# friendly (I hope so) wrapper around rabbit C# SDK.</Description>
         <RepositoryUrl>https://github.com/marcingolenia/rabbitor</RepositoryUrl>
-        <PackageIcon>icon.png</PackageIcon>
+        <PackageIcon>logo.png</PackageIcon>
         <license>MIT</license>
         <PackageReleaseNotes>Alpha</PackageReleaseNotes>
     </PropertyGroup>
