@@ -4,7 +4,15 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "RabbitStreams", "RabbitStre
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tests", "Tests\Tests.fsproj", "{C9641E33-1787-417D-B2CA-FC15DFABF0CB}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Contracts", "Contracts\Contracts.fsproj", "{B03A8C8B-FF39-43B9-845B-341E34F6CECF}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tests.Contracts", "Tests.Contracts\Tests.Contracts.fsproj", "{B03A8C8B-FF39-43B9-845B-341E34F6CECF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_files", "_files", "{3E220639-D17D-4E57-87B0-291247135584}"
+ProjectSection(SolutionItems) = preProject
+	backlog.md = backlog.md
+	Dockerfile-rabbit = Dockerfile-rabbit
+	.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+	docker-compose.yml = docker-compose.yml
+EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

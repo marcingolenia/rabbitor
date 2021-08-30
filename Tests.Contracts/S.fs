@@ -1,4 +1,4 @@
-﻿namespace Contracts.A
+﻿namespace Tests.Contracts.S
 
 open System
 

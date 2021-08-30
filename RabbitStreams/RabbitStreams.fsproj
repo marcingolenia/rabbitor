@@ -12,8 +12,6 @@
         <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="Publisher.fs" />
-        <Compile Include="Consumer.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 </Project>

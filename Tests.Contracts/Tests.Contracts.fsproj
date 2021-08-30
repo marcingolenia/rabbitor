@@ -1,14 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <WarnOn>3390;$(WarnOn)</WarnOn>
+        <RootNamespace>Contracts</RootNamespace>
     </PropertyGroup>
-
     <ItemGroup>
         <Compile Include="A.fs" />
+        <Compile Include="S.fs" />
         <Compile Include="B.fs" />
+        <Compile Include="C.fs" />
     </ItemGroup>
-
 </Project>
