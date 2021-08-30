@@ -2,6 +2,8 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="Bus.fs" />

@@ -13,6 +13,7 @@ ProjectSection(SolutionItems) = preProject
 	.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 	docker-compose.yml = docker-compose.yml
 	README.md = README.md
+	.gitignore = .gitignore
 EndProjectSection
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Rabbitor", "Rabbitor\Rabbitor.fsproj", "{33F31FD2-AFC3-41A4-8347-D518AD61509E}"
