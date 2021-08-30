@@ -15,6 +15,8 @@ ProjectSection(SolutionItems) = preProject
 	README.md = README.md
 EndProjectSection
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Rabbitor", "Rabbitor\Rabbitor.fsproj", "{33F31FD2-AFC3-41A4-8347-D518AD61509E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{B03A8C8B-FF39-43B9-845B-341E34F6CECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B03A8C8B-FF39-43B9-845B-341E34F6CECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B03A8C8B-FF39-43B9-845B-341E34F6CECF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33F31FD2-AFC3-41A4-8347-D518AD61509E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33F31FD2-AFC3-41A4-8347-D518AD61509E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33F31FD2-AFC3-41A4-8347-D518AD61509E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33F31FD2-AFC3-41A4-8347-D518AD61509E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

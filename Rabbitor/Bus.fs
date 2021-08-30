@@ -1,4 +1,4 @@
-module Bus
+﻿module Bus
 
 open System
 open System.Reflection

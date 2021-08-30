@@ -2,12 +2,11 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <IsPackable>false</IsPackable>
-        <GenerateProgramFile>false</GenerateProgramFile>
+        <GenerateProgramFile>true</GenerateProgramFile>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="Rabbitor.fs" />
         <Compile Include="PubSub_Streams.fs" />
-        <Compile Include="Program.fs" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="FsUnit.xUnit" Version="4.0.5" />
@@ -24,6 +23,7 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\Rabbitor\Rabbitor.fsproj" />
       <ProjectReference Include="..\Tests.Contracts\Tests.Contracts.fsproj" />
     </ItemGroup>
 </Project>

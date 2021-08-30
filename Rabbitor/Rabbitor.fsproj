@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-        <RootNamespace>Contracts</RootNamespace>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="A.fs" />
-        <Compile Include="S.fs" />
-        <Compile Include="B.fs" />
-        <Compile Include="C.fs" />
+        <Compile Include="Bus.fs" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
     </ItemGroup>
 </Project>
