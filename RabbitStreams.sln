@@ -12,6 +12,7 @@ ProjectSection(SolutionItems) = preProject
 	Dockerfile-rabbit = Dockerfile-rabbit
 	.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 	docker-compose.yml = docker-compose.yml
+	README.md = README.md
 EndProjectSection
 EndProject
 Global
