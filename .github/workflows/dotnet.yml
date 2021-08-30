@@ -25,4 +25,4 @@ jobs:
       - name: Pack Nuget
         run: dotnet pack Rabbitor/Rabbitor.fsproj -c Release -o nuget
       - name: Push nuget
-        run: dotnet nuget push ./out/*.nupkg -k ${{ secrets.NUGET }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push ./nuget/*.nupkg -k ${{ secrets.NUGET }} -s https://api.nuget.org/v3/index.json --skip-duplicate
