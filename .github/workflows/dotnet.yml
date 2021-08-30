@@ -14,8 +14,6 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '5.0.400'
-        env:
-          NUGET_AUTH_TOKEN: ${{secrets.NUGET}}
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
@@ -27,4 +25,4 @@ jobs:
       - name: Pack Nuget
         run: dotnet pack Rabbitor/Rabbitor.fsproj -c Release -o nuget
       - name: Push nuget
-        run: dotnet nuget push ./nuget/*.nupkg -s https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push foo.nupkg -k ${{NUGET}} -s https://api.nuget.org/v3/index.json --skip-duplicate
