@@ -9,12 +9,13 @@
         <Description>The opinionated F# friendly (I hope so) wrapper around rabbit C# SDK.</Description>
         <RepositoryUrl>https://github.com/marcingolenia/rabbitor</RepositoryUrl>
         <PackageIcon>logo.png</PackageIcon>
-        <license>MIT</license>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <PackageReleaseNotes>Alpha</PackageReleaseNotes>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="Bus.fs" />
-        <None Include="../logo.png" Pack="true" PackagePath="/" />
+        <None Include="../../logo.png" Pack="true" PackagePath="/" />
+        <None Include="../../LICENSE.md" Pack="true" PackagePath="/" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

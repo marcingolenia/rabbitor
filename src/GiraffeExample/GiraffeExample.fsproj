@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-        <AssemblyName>RabbitStreams</AssemblyName>
         <EnableDefaultContentItems>false</EnableDefaultContentItems>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -12,5 +11,8 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Program.fs" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Rabbitor\Rabbitor.fsproj" />
     </ItemGroup>
 </Project>

@@ -31,7 +31,7 @@ let ``Subscribing and handling to published messages using different types of ev
                                  promise_B.SetResult()
                              return Ok ()
                          })
-        use bus = Bus.connect(["localhost"])
+        use bus = Bus.connect ["localhost"]
                   |> Bus.initPublisher<A.Events>   
                   |> Bus.initPublisher<B.Events>
                   |> Bus.subscribe<A.Events> handlerA
@@ -60,7 +60,7 @@ let ``RabbitMq Streams`` () =
                                      promise.SetResult()
                             return Ok ()
                         })
-        use bus = Bus.connect(["localhost"])
+        use bus = Bus.connect ["localhost"]
                   |> Bus.initStreamedPublisher<S.Events>
         expectedEvents |> List.iter (Bus.publish bus)
         // Act

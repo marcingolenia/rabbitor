@@ -23,6 +23,6 @@ jobs:
       - name: Test
         run: dotnet test
       - name: Pack Nuget
-        run: dotnet pack Rabbitor/Rabbitor.fsproj -c Release -o nuget
+        run: dotnet pack src/Rabbitor/Rabbitor.fsproj -c Release -o nuget
       - name: Push nuget
         run: dotnet nuget push ./nuget/*.nupkg -k ${{ secrets.NUGET }} -s https://api.nuget.org/v3/index.json --skip-duplicate

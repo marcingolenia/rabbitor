@@ -1,0 +1,3 @@
+[*.fs]
+fsharp_blank_lines_around_nested_multiline_expressions=false
+fsharp_multi_line_lambda_closing_newline = true
