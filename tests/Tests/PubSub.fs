@@ -70,7 +70,7 @@ let ``Failures are ignored and remaining events are consumed.`` () =
               D.FrogKissed
                   { Name = $"{Guid.NewGuid()}"
                     When = DateTime.Now } ]
-        let handlerA =
+        let handler =
             (fun event ->
                 async {
                     match event with
@@ -87,8 +87,57 @@ let ``Failures are ignored and remaining events are consumed.`` () =
         use bus =
             Bus.connect [ "localhost" ]
             |> Bus.initPublisher<D.Events>
-            |> Bus.subscribe<D.Events> handlerA
+            |> Bus.subscribe<D.Events> handler
+        // Act
+        expectedEvents |> List.iter (Bus.publish bus)
+        // Assert
+        do! promise.Task |> Async.AwaitTask
+        actualHandledEvents
+        |> should
+            equal
+            (expectedEvents
+             |> List.choose (
+                 function
+                 | D.Events.FrogKissed evt -> Some evt
+                 | _ -> None
+             ))
+    }
 
+[<Fact>]
+let ``Failures are ignored and remaining events are consumed 2.`` () =
+    // Arrange
+    async {
+        let mutable actualHandledEvents, promise = [], TaskCompletionSource()
+        let expectedEvents =
+            [ D.FrogKissed
+                  { Name = $"{Guid.NewGuid()}"
+                    When = DateTime.Now }
+              D.FrogDivorced
+                  { Name = $"{Guid.NewGuid()}"
+                    When = DateTime.Now }
+              D.FrogMarried { Name = $"{Guid.NewGuid()}" }
+              D.FrogKissed
+                  { Name = $"{Guid.NewGuid()}"
+                    When = DateTime.Now } ]
+        let handler =
+            (fun event ->
+                async {
+                    match event with
+                    | D.FrogDivorced _ -> return Error("sth bad happened" :> obj)
+                    | D.FrogMarried _ ->
+                        failwith "Exception!!"
+                        return Ok()
+                    | D.FrogKissed evt ->
+                        actualHandledEvents <- actualHandledEvents @ [ evt ]
+                        if (actualHandledEvents.Length = 2) then
+                            promise.SetResult()
+                        return Ok()
+                })
+        let decoratedHandler = ConsumerDecorators.handleWithDecors handler [ConsumerDecorators.retry 3]
+        use bus =
+            Bus.connect [ "localhost" ]
+            |> Bus.initPublisher<D.Events>
+            |> Bus.subscribe<D.Events> decoratedHandler 
         // Act
         expectedEvents |> List.iter (Bus.publish bus)
         // Assert

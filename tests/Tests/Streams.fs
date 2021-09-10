@@ -1,4 +1,4 @@
-module Tests
+module Streams
 
 open System
 open System.Threading

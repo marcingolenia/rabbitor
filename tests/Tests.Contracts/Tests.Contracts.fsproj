@@ -6,9 +6,10 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="A.fs" />
-        <Compile Include="D.fs" />
-        <Compile Include="S.fs" />
         <Compile Include="B.fs" />
         <Compile Include="C.fs" />
+        <Compile Include="D.fs" />
+        <Compile Include="E.fs" />
+        <Compile Include="S.fs" />
     </ItemGroup>
 </Project>

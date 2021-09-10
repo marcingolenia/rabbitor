@@ -14,6 +14,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="Bus.fs" />
+        <Compile Include="ConsumerDecorators.fs" />
         <None Include="../../logo.png" Pack="true" PackagePath="/" />
         <None Include="../../LICENSE.md" Pack="true" PackagePath="/" />
     </ItemGroup>
