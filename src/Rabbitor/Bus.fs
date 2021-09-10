@@ -3,7 +3,6 @@
 open System
 open System.Reflection
 open System.Text
-open System.Threading
 open System.Threading.Tasks
 open Newtonsoft.Json
 open RabbitMQ.Client
@@ -18,18 +17,16 @@ type Bus =
         member this.Dispose() = this.Connection.Dispose()
 
 module Bus =
-
-    [<Literal>]
-    let StreamIdleCloseInterval = 3000
-    
-    let customConnect (connectionFactory: unit -> ConnectionFactory) (hosts: string list) =
+    let customConnect
+        (connectionFactory: unit -> ConnectionFactory)
+        (hosts: string list)
+        =
         let factory = connectionFactory ()
         factory.DispatchConsumersAsync <- true
         let connection =
             factory.CreateConnection(ResizeArray<string> hosts)
-        let publishingChannel = connection.CreateModel()
         { Connection = connection
-          PublishChannel = publishingChannel
+          PublishChannel = connection.CreateModel()
           ConsumeChannels = [] }
 
     let connect = customConnect ConnectionFactory
@@ -61,23 +58,42 @@ module Bus =
         =
         let queueName =
             $"{Assembly.GetExecutingAssembly().GetName().Name}_{typeof<'a>.FullName}"
-        let handlerWrapped =
+        let handlerWrapped (channel: IModel) =
             AsyncEventHandler<BasicDeliverEventArgs>(fun (sender: obj) (delivery: BasicDeliverEventArgs) ->
                 let event =
                     deserializer (Encoding.UTF8.GetString(delivery.Body.ToArray()))
-                handler event |> Async.StartAsTask :> Task
+                async {
+                    try 
+                        match! handler event with
+                        | Ok _ -> channel.BasicAck(delivery.DeliveryTag, multiple = false)
+                        | Error _ -> channel.BasicReject(delivery.DeliveryTag, requeue = false)
+                    with _ -> channel.BasicReject(delivery.DeliveryTag, requeue = false)
+                }
+                |> Async.StartAsTask
+                :> Task
             )
         let channels =
             [ 1 .. threadsCount ]
             |> List.map (fun _ ->
                 let channel = bus.Connection.CreateModel()
-                channel.QueueDeclare(queueName, durable = true, exclusive = false, autoDelete = false)
+                channel.QueueDeclare(
+                    queueName,
+                    durable = true,
+                    exclusive = false,
+                    autoDelete = false
+                )
                 |> ignore
                 channel.QueueBind(queueName, typeof<'a>.FullName, "")
-                channel.BasicQos(0u, 1us, true)
+                channel.BasicQos(0u, 1us, false)
                 let consumer = AsyncEventingBasicConsumer channel
-                consumer.add_Received handlerWrapped
-                channel.BasicConsume(queueName, autoAck = true, consumerTag = "", arguments = null, consumer = consumer)
+                consumer.add_Received (handlerWrapped channel)
+                channel.BasicConsume(
+                    queueName,
+                    autoAck = false,
+                    consumerTag = "",
+                    arguments = null,
+                    consumer = consumer
+                )
                 |> ignore
                 channel
             )
@@ -92,7 +108,7 @@ module Bus =
     let consumeStreamWithDeserializer<'a>
         (deserializer: string -> 'a)
         (handler: 'a -> Async<Result<unit, obj>>)
-        (offset: int)
+        (offset: uint32)
         bus
         =
         let handlerWrapped (channel: IModel) (totalCount: uint32) =
@@ -102,28 +118,32 @@ module Bus =
                 async {
                     match! handler event with
                     | Ok _ -> channel.BasicAck(delivery.DeliveryTag, multiple = false)
-                    | Error _ -> channel.BasicNack(delivery.DeliveryTag, multiple = false, requeue = false)
-                    let deliveredOffset = delivery.BasicProperties.Headers.["x-stream-offset"] :?> int64 |> uint32
-                    if deliveredOffset + 1ul = totalCount then channel.Dispose()
+                    | Error _ ->
+                        channel.BasicNack(
+                            delivery.DeliveryTag,
+                            multiple = false,
+                            requeue = false
+                        )
+                    let deliveredOffset =
+                        delivery.BasicProperties.Headers.["x-stream-offset"] :?> int64
+                        |> uint32
+                    if deliveredOffset + 1u = totalCount then
+                        channel.Close()
+                        channel.Dispose()
                 }
                 |> Async.StartAsTask
                 :> Task
             )
         let channel = bus.Connection.CreateModel()
         channel.BasicQos(0u, 1us, false)
-        let consumer = AsyncEventingBasicConsumer channel
-        // Consider switching to messages count - more robust and simple line 123
         let streamedQueueName = $"{typeof<'a>.FullName}-stream"
         let totalMessagesCount = channel.MessageCount streamedQueueName
         match totalMessagesCount with
-        | 0u ->
-            channel.Dispose()
+        | 0u
+        | _ when offset >= totalMessagesCount -> channel.Dispose()
         | _ ->
-            consumer.add_Received (
-                handlerWrapped
-                    channel
-                    totalMessagesCount
-                )
+            let consumer = AsyncEventingBasicConsumer channel
+            consumer.add_Received (handlerWrapped channel totalMessagesCount)
             channel.BasicConsume(
                 streamedQueueName,
                 autoAck = false,
@@ -140,10 +160,8 @@ module Bus =
     let serializeAndPublish (serialize: 'a -> string) bus event =
         let bytes =
             event |> serialize |> Encoding.UTF8.GetBytes
-        let exchange = event.GetType().DeclaringType.FullName
-        let a = $"{exchange}+{event.GetType().Name}"
         bus.PublishChannel.BasicPublish(
-            exchange = a,
+            exchange = typeof<'a>.FullName,
             routingKey = "",
             basicProperties = null,
             body = ReadOnlyMemory bytes

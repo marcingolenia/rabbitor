@@ -13,25 +13,26 @@ type CompanyCreated = {
 type Events =
     | CompanyCreated of {| Name: string; On: DateTime |}
     
-let handler = (fun event ->
+let handler prefix = (fun event ->
                 async {
-                    printfn $"Received: %A{event} || at %s{DateTime.Now.ToShortTimeString()}"
-                    do! Async.Sleep 1000
+                    printfn $"%s{prefix} | Received: %A{event} || at %s{DateTime.Now.ToShortTimeString()}"
+                    do! Async.Sleep 500
                     return Ok ()
-                })    
+                })
     
 let pub (bus: Bus) : HttpHandler =
     let evt = Events.CompanyCreated {| Name = Guid.NewGuid().ToString(); On = DateTime.Now |}
     evt |> Bus.publish bus
     text $"published: %A{evt}"
     
-let read (bus: Bus) : HttpHandler =
-    Bus.consumeStream<Events> handler 3 bus |> ignore
+let read offset (bus: Bus) : HttpHandler =
+    Bus.consumeStream<Events> (handler "Stream Handling") offset bus |> ignore
+    Bus.subscribe<Events> (handler "Subscription Handling") bus |> ignore
     text "Will consume."
 
 let webApp (bus: Bus) =
     choose [ route "/pub-random" >=> warbler (fun _ -> pub bus)
-             route "/stream-console" >=> warbler (fun _ -> read bus)
+             routef "/stream-console/%i" (fun (offset: int) ->  read (uint32 offset) bus)
              route "/" >=> text "Hello from Consumer3!" ]
 
 let configureApp (app: IApplicationBuilder) =

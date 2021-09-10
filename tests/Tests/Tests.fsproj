@@ -6,7 +6,8 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="PubSub_Streams.fs" />
+        <Compile Include="PubSub.fs" />
+        <Compile Include="Streams.fs" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="FsUnit.xUnit" Version="4.0.5" />

@@ -1,3 +1,8 @@
 [*.fs]
 fsharp_blank_lines_around_nested_multiline_expressions=false
 fsharp_multi_line_lambda_closing_newline = true
+indent_size=4
+max_line_length=90
+fsharp_max_if_then_else_short_width=45
+fsharp_max_infix_operator_expression=90
+fsharp_align_function_signature_to_indentation=true
