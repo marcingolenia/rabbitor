@@ -184,7 +184,7 @@ module Bus =
     
     let serializeAndPublishMany (serialize: 'a -> string) bus events =
         let batch = bus.Publication.Channel.CreateBasicPublishBatch()
-        events |> Array.iter(fun evt ->
+        events |> List.iter(fun evt ->
             batch.Add(
                     exchange = typeof<'a>.FullName,
                     routingKey = "",

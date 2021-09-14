@@ -2,3 +2,6 @@
 
 type Whatever = { Name: string }
 type Whatever2 = { Name: string }
+type Whatever3 = { Name: string }
+type Whatever4 = { Name: string }
+type Whatever5 = { Name: string }

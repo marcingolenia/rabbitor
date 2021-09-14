@@ -43,8 +43,8 @@ let ``Checking thread safety of IModel (channel) while multi-publishing messages
                 Console.WriteLine($"Doing... {i} on Pool: {Thread.CurrentThread.IsThreadPoolThread} with Id: {Thread.CurrentThread.ManagedThreadId}")
                 Bus.publishMany
                     bus
-                    [| ({ Name = i.ToString() }: F.Whatever)
-                       ({ Name = i.ToString() + "_2nd" }: F.Whatever) |]
+                    [ ({ Name = i.ToString() }: F.Whatever)
+                      ({ Name = i.ToString() + "_2nd" }: F.Whatever) ]
             )
             |> ignore
         )
