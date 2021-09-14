@@ -10,16 +10,11 @@ open Rabbitor
 [<Fact(Skip="~")>]
 let ``Checking thread safety of IModel (channel) while single-publishing messages`` () =
     async {
-        let amountToPublish = 1000
+        let amountToPublish = 1000u
         let bus =
             Bus.connect [ "localhost" ] |> Bus.initStreamedPublisher<F.Whatever>
-        let messagesAmount () =
-            int
-            <| bus.Publication.Channel.MessageCount(
-                $"{typeof<F.Whatever>.FullName}-stream"
-            )
-        let amountBeforePublish = messagesAmount ()
-        [ 1 .. 1000 ]
+        let amountBeforePublish = bus.NumberOfMessagesInStream<F.Whatever> ()
+        [ 1u .. amountToPublish ]
         |> List.iter (fun i ->
             ThreadPool.QueueUserWorkItem(fun _ ->
                 Console.WriteLine($"Doing... {i} on Pool: {Thread.CurrentThread.IsThreadPoolThread} with Id: {Thread.CurrentThread.ManagedThreadId}")
@@ -30,7 +25,7 @@ let ``Checking thread safety of IModel (channel) while single-publishing message
 
         do! Async.Sleep 5000
         // Assert
-        let actualMessageAmount = messagesAmount ()
+        let actualMessageAmount = bus.NumberOfMessagesInStream<F.Whatever> ()
         actualMessageAmount |> should equal (amountBeforePublish + amountToPublish)
     // Nothing bad happens
     }
@@ -38,16 +33,11 @@ let ``Checking thread safety of IModel (channel) while single-publishing message
 [<Fact(Skip="~")>]
 let ``Checking thread safety of IModel (channel) while multi-publishing messages`` () =
     async {
-        let amountToPublish = 1000
+        let amountToPublish = 1000u
         let bus =
             Bus.connect [ "localhost" ] |> Bus.initStreamedPublisher<F.Whatever>
-        let checkNumberOfMessages () =
-            int
-            <| bus.Publication.Channel.MessageCount(
-                $"{typeof<F.Whatever>.FullName}-stream"
-            )
-        let amountBeforePublish = checkNumberOfMessages ()
-        [ 1 .. 1000 ]
+        let amountBeforePublish = bus.NumberOfMessagesInStream<F.Whatever>()
+        [ 1u .. 1000u ]
         |> List.iter (fun i ->
             ThreadPool.QueueUserWorkItem(fun threadContext ->
                 Console.WriteLine($"Doing... {i} on Pool: {Thread.CurrentThread.IsThreadPoolThread} with Id: {Thread.CurrentThread.ManagedThreadId}")
@@ -60,8 +50,8 @@ let ``Checking thread safety of IModel (channel) while multi-publishing messages
         )
         do! Async.Sleep 5500
         // Assert
-        let actualMessageAmount = checkNumberOfMessages ()
-        actualMessageAmount |> should equal (amountBeforePublish + amountToPublish * 2)
+        let actualMessageAmount = bus.NumberOfMessagesInStream<F.Whatever>()
+        actualMessageAmount |> should equal (amountBeforePublish +  amountToPublish * 2u)
         // Nothing bad happens
     }
     
@@ -73,11 +63,7 @@ let ``Let's check again using threads - publish thread safety`` () =
         |> List.iter(fun i -> Bus.publish bus ({ Name = i.ToString() }: F.Whatever2))
     async {
         let bus = Bus.connect [ "localhost" ] |> Bus.initStreamedPublisher<F.Whatever2>
-        let checkNumberOfMessages () =
-            int
-            <| bus.Publication.Channel.MessageCount(
-                $"{typeof<F.Whatever2>.FullName}-stream")
-        let messagesNoBeforePublish = checkNumberOfMessages()
+        let messagesNoBeforePublish = bus.NumberOfMessagesInStream<F.Whatever2>()
         let t1 = Thread(pub bus)
         let t2 = Thread(pub bus)
         let t3 = Thread(pub bus)
@@ -90,7 +76,7 @@ let ``Let's check again using threads - publish thread safety`` () =
         t3.Join()
         // Assert
         do! Async.Sleep 5000
-        let messagesNoAfterPublish = checkNumberOfMessages()
-        messagesNoAfterPublish |> should equal (messagesNoBeforePublish + 3000)
+        let messagesNoAfterPublish = bus.NumberOfMessagesInStream<F.Whatever2>()
+        messagesNoAfterPublish |> should equal (messagesNoBeforePublish + 3000u)
         // Nothing bad happens
     }

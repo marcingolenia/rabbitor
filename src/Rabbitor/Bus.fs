@@ -19,6 +19,9 @@ type ConsumptionBus =
 type Bus =
     { Publication: PublicationBus
       Consumption: ConsumptionBus }
+    member this.NumberOfMessagesInStream<'a>() =
+        this.Publication.Channel.MessageCount $"{typeof<'a>.FullName}-stream"
+        
     interface IDisposable with
         member this.Dispose() =
             this.Publication.Connection.Dispose()
@@ -117,9 +120,6 @@ module Bus =
 
     let subscribe<'a> = parallelSubscribe<'a> 1
     
-    let numberOfMessagesInStream<'a> bus =
-        bus.Publication.Channel.MessageCount $"{typeof<'a>.FullName}-stream"
-
     let consumeStreamWithDeserializer<'a>
         (deserializer: string -> 'a)
         (handler: 'a -> Async<Result<unit, obj>>)
