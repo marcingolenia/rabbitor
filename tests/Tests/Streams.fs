@@ -11,6 +11,7 @@ open Rabbitor
 [<Literal>]
 let ``Seconds to wait for stream write`` = 4_000
 
+// TODO: Figure out how to get rid off that. 
 let ``Stream handling timeout`` = TimeSpan.FromSeconds 10.0
 
 [<Fact>]
@@ -27,7 +28,7 @@ let ``Stream can be consumed starting with given offset`` () =
         use bus =
             Bus.connect [ "localhost" ] |> Bus.initStreamedPublisher<S.Events>
         let messagesAmount =
-            int <| bus.PublishChannel.MessageCount($"{typeof<S.Events>.FullName}-stream")
+            int <| bus.Publication.Channel.MessageCount($"{typeof<S.Events>.FullName}-stream")
         expectedEvents |> List.iter (Bus.publish bus)
         do! Async.Sleep(``Seconds to wait for stream write``)
         let handler =
@@ -41,6 +42,7 @@ let ``Stream can be consumed starting with given offset`` () =
         // Act
         Bus.consumeStream<S.Events> handler 0u bus |> ignore
         do! promise.Task |> Async.AwaitTask
+        // Assert
         actualHandledEvents.[actualHandledEvents.Length - 10..]
         |> should equal expectedEvents
     }

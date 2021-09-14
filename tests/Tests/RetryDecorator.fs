@@ -46,6 +46,9 @@ let ``Failures are retried given number of times`` () =
         expectedEvents |> List.iter (Bus.publish bus)
         // Assert
         do! promise.Task |> Async.AwaitTask
-        // 4 - retries on Error | 4 - retries on exception | 1 normal handling
+        // 1 + 3 - retries on Error
+        // 1 + 3 - retries on exception
+        // 1 normal handling
+        // 9 Total
         eventsProcessed.Length |> should equal 9
     }

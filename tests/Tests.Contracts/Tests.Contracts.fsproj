@@ -10,6 +10,7 @@
         <Compile Include="C.fs" />
         <Compile Include="D.fs" />
         <Compile Include="E.fs" />
+        <Compile Include="F.fs" />
         <Compile Include="S.fs" />
     </ItemGroup>
 </Project>

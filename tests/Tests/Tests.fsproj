@@ -7,8 +7,11 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="PubSub.fs" />
+        <Compile Include="ParallelSubscriptions.fs" />
+        <Compile Include="CustomJsonSerializer.fs" />
         <Compile Include="Streams.fs" />
         <Compile Include="RetryDecorator.fs" />
+        <Compile Include="Learning.ThreadIssues.fs" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="FsUnit.xUnit" Version="4.0.5" />

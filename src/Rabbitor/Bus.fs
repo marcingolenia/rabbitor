@@ -8,13 +8,21 @@ open Newtonsoft.Json
 open RabbitMQ.Client
 open RabbitMQ.Client.Events
 
-type Bus =
+type PublicationBus =
     { Connection: IConnection
-      PublishChannel: IModel
-      ConsumeChannels: IModel list }
+      Channel: IModel }
 
+type ConsumptionBus =
+    { Connection: IConnection
+      Channels: IModel list }
+
+type Bus =
+    { Publication: PublicationBus
+      Consumption: ConsumptionBus }
     interface IDisposable with
-        member this.Dispose() = this.Connection.Dispose()
+        member this.Dispose() =
+            this.Publication.Connection.Dispose()
+            this.Consumption.Connection.Dispose()
 
 module Bus =
     let customConnect
@@ -23,23 +31,26 @@ module Bus =
         =
         let factory = connectionFactory ()
         factory.DispatchConsumersAsync <- true
-        let connection =
+        let pubConnection =
             factory.CreateConnection(ResizeArray<string> hosts)
-        { Connection = connection
-          PublishChannel = connection.CreateModel()
-          ConsumeChannels = [] }
+        { Publication =
+              { Connection = pubConnection
+                Channel = pubConnection.CreateModel() }
+          Consumption =
+              { Connection = factory.CreateConnection(ResizeArray<string> hosts)
+                Channels = [] } }
 
     let connect = customConnect ConnectionFactory
 
     let initPublisher<'a> bus =
-        bus.PublishChannel.ExchangeDeclare(typeof<'a>.FullName, ExchangeType.Fanout)
+        bus.Publication.Channel.ExchangeDeclare(typeof<'a>.FullName, ExchangeType.Fanout)
         bus
 
     let initStreamedPublisher<'a> bus =
         let exchangeName = typeof<'a>.FullName
         let streamedQueueName = $"{typeof<'a>.FullName}-stream"
-        bus.PublishChannel.ExchangeDeclare(exchangeName, ExchangeType.Fanout)
-        bus.PublishChannel.QueueDeclare(
+        bus.Publication.Channel.ExchangeDeclare(exchangeName, ExchangeType.Fanout)
+        bus.Publication.Channel.QueueDeclare(
             streamedQueueName,
             autoDelete = false,
             exclusive = false,
@@ -47,7 +58,7 @@ module Bus =
             arguments = dict [ ("x-queue-type", "stream" :> obj) ]
         )
         |> ignore
-        bus.PublishChannel.QueueBind(streamedQueueName, exchangeName, "")
+        bus.Publication.Channel.QueueBind(streamedQueueName, exchangeName, "")
         bus
 
     let parallelSubscribeWithDeserializer<'a>
@@ -63,11 +74,13 @@ module Bus =
                 let event =
                     deserializer (Encoding.UTF8.GetString(delivery.Body.ToArray()))
                 async {
-                    try 
+                    try
                         match! handler event with
                         | Ok _ -> channel.BasicAck(delivery.DeliveryTag, multiple = false)
-                        | Error _ -> channel.BasicReject(delivery.DeliveryTag, requeue = false)
-                    with _ -> channel.BasicReject(delivery.DeliveryTag, requeue = false)
+                        | Error _ ->
+                            channel.BasicReject(delivery.DeliveryTag, requeue = false)
+                    with
+                    | _ -> channel.BasicReject(delivery.DeliveryTag, requeue = false)
                 }
                 |> Async.StartAsTask
                 :> Task
@@ -75,7 +88,7 @@ module Bus =
         let channels =
             [ 1 .. threadsCount ]
             |> List.map (fun _ ->
-                let channel = bus.Connection.CreateModel()
+                let channel = bus.Consumption.Connection.CreateModel()
                 channel.QueueDeclare(
                     queueName,
                     durable = true,
@@ -97,13 +110,15 @@ module Bus =
                 |> ignore
                 channel
             )
-        { bus with
-              ConsumeChannels = bus.ConsumeChannels @ channels }
+        { bus with Consumption = { bus.Consumption with Channels = bus.Consumption.Channels @ channels } }
 
     let parallelSubscribe<'a> =
         parallelSubscribeWithDeserializer<'a> JsonConvert.DeserializeObject<'a>
 
     let subscribe<'a> = parallelSubscribe<'a> 1
+    
+    let numberOfMessagesInStream<'a> bus =
+        bus.Publication.Channel.MessageCount $"{typeof<'a>.FullName}-stream"
 
     let consumeStreamWithDeserializer<'a>
         (deserializer: string -> 'a)
@@ -134,7 +149,7 @@ module Bus =
                 |> Async.StartAsTask
                 :> Task
             )
-        let channel = bus.Connection.CreateModel()
+        let channel = bus.Consumption.Connection.CreateModel()
         channel.BasicQos(0u, 1us, false)
         let streamedQueueName = $"{typeof<'a>.FullName}-stream"
         let totalMessagesCount = channel.MessageCount streamedQueueName
@@ -160,12 +175,27 @@ module Bus =
     let serializeAndPublish (serialize: 'a -> string) bus event =
         let bytes =
             event |> serialize |> Encoding.UTF8.GetBytes
-        bus.PublishChannel.BasicPublish(
+        bus.Publication.Channel.BasicPublish(
             exchange = typeof<'a>.FullName,
             routingKey = "",
             basicProperties = null,
             body = ReadOnlyMemory bytes
         )
+    
+    let serializeAndPublishMany (serialize: 'a -> string) bus events =
+        let batch = bus.Publication.Channel.CreateBasicPublishBatch()
+        events |> Array.iter(fun evt ->
+            batch.Add(
+                    exchange = typeof<'a>.FullName,
+                    routingKey = "",
+                    mandatory = true,
+                    properties = null,
+                    body = ReadOnlyMemory (serialize evt |> Encoding.UTF8.GetBytes))
+            )
+        batch.Publish()
 
     let publish bus =
-        serializeAndPublish JsonConvert.SerializeObject bus
+        serializeAndPublish JsonConvert.SerializeObject bus 
+
+    let publishMany bus =
+        serializeAndPublishMany JsonConvert.SerializeObject bus 

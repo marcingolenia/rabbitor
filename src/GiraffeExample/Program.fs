@@ -27,7 +27,6 @@ let pub (bus: Bus) : HttpHandler =
     
 let read offset (bus: Bus) : HttpHandler =
     Bus.consumeStream<Events> (handler "Stream Handling") offset bus |> ignore
-    Bus.subscribe<Events> (handler "Subscription Handling") bus |> ignore
     text "Will consume."
 
 let webApp (bus: Bus) =
@@ -38,6 +37,7 @@ let webApp (bus: Bus) =
 let configureApp (app: IApplicationBuilder) =
     let bus = Bus.connect ["localhost"]
               |> Bus.initStreamedPublisher<Events>
+              |> Bus.subscribe<Events> (handler "Subscription Handling")
     app.UseGiraffe (webApp bus)
 
 let configureServices (services: IServiceCollection) = services.AddGiraffe() |> ignore
