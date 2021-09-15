@@ -13,14 +13,14 @@ The library focuses (at the moment) on RabbitMQ. If You need more You should che
 - [Features](#Features)
 - [Coming next](#Coming-next)
 - [Recipes](#Recipes)
-   1. [Quickstart: async communication between services](#1.-Quickstart:-async-communication-between-services)
-   2. [Increase throughput through parallel consumers](#2.-Increase-throughput-through-parallel-consumers)
-   3. [Stream consumption (useful when adding new service or whenever You need to synchronise)](#3.-Stream-consumption)
-   4. [Extending the consumer capabilities using decorators](#4.-Extending-the-consumer-capabilities-using-decorators)
+   1. Quickstart: async communication between services
+   2. Increase throughput through parallel consumers
+   3. Stream consumption (useful when adding new service or whenever You need to synchronise)
+   4. Extending the consumer capabilities using decorators
 - [Explanations](#Explanations)
-   1. [Serialization/Deserialization of messages](#1.-Serialization/Deserialization-of-messages)
-   2. [Queues and Exchanges topology convention](#2.-Queues-and-Exchanges-topology-convention) 
-   3. [Connection to RabbitMQ](#3.-Connection-to-RabbitMQ)
+   1. Serialization/Deserialization of messages
+   2. Queues and Exchanges topology convention 
+   3. Connection to RabbitMQ
 
 # Features
 - Publish-Subscribe messaging
