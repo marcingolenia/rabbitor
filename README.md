@@ -94,17 +94,17 @@ let bus = Bus.connect ["localhost"]
 ```
 That is all! Bus handler will process received notification from now on.
 
-##2. Increase throughput through parallel consumers
+## 2. Increase throughput through parallel consumers
 todo
-##3. Stream consumption
+## 3. Stream consumption
 todo
-##4. Extending the consumer capabilities using decorators
+## 4. Extending the consumer capabilities using decorators
 todo
 
-#Explanations
-##1. Serialization/Deserialization of messages
+# Explanations
+## 1. Serialization/Deserialization of messages
 todo
-##2. Queues and Exchanges topology convention
+## 2. Queues and Exchanges topology convention
 todo
-##3. Connection to RabbitMQ
+## 3. Connection to RabbitMQ
 todo
