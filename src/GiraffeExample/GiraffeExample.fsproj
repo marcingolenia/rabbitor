@@ -11,6 +11,9 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Program.fs" />
+        <Content Include="appsettings.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Rabbitor\Rabbitor.fsproj" />

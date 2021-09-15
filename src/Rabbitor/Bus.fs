@@ -172,7 +172,7 @@ module Bus =
     let consumeStream<'a> =
         consumeStreamWithDeserializer<'a> JsonConvert.DeserializeObject<'a>
 
-    let serializeAndPublish (serialize: 'a -> string) bus event =
+    let serializeAndPublish bus (serialize: 'a -> string) event =
         let bytes =
             event |> serialize |> Encoding.UTF8.GetBytes
         bus.Publication.Channel.BasicPublish(
@@ -182,7 +182,7 @@ module Bus =
             body = ReadOnlyMemory bytes
         )
     
-    let serializeAndPublishMany (serialize: 'a -> string) bus events =
+    let serializeAndPublishMany bus (serialize: 'a -> string) events =
         let batch = bus.Publication.Channel.CreateBasicPublishBatch()
         events |> List.iter(fun evt ->
             batch.Add(
@@ -195,7 +195,7 @@ module Bus =
         batch.Publish()
 
     let publish bus =
-        serializeAndPublish JsonConvert.SerializeObject bus 
+        serializeAndPublish bus JsonConvert.SerializeObject 
 
     let publishMany bus =
-        serializeAndPublishMany JsonConvert.SerializeObject bus 
+        serializeAndPublishMany bus JsonConvert.SerializeObject 

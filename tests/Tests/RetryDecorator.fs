@@ -6,6 +6,7 @@ open Xunit
 open System.Threading.Tasks
 open FsUnit.Xunit
 open Rabbitor
+open ConsumerDecorators
 
 [<Fact>]
 let ``Failures are retried given number of times`` () =
@@ -36,8 +37,7 @@ let ``Failures are retried given number of times`` () =
                         failwith "Exception!!"
                         return Ok()
                 })
-        let decoratedHandler =
-            ConsumerDecorators.handleWithDecors handler [ConsumerDecorators.retry 3]
+        let decoratedHandler = handler |> decorate [retry 3]
         use bus =
             Bus.connect [ "localhost" ]
             |> Bus.initPublisher<E.Events>

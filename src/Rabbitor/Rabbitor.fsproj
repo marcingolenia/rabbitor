@@ -3,14 +3,22 @@
         <TargetFramework>net5.0</TargetFramework>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <PackageId>Rabbitor</PackageId>
-        <VersionPrefix>0.0.2</VersionPrefix>
-        <VersionSuffix>alpha</VersionSuffix>
+        <VersionPrefix>0.0.3</VersionPrefix>
+<!--        <VersionSuffix>alpha</VersionSuffix>-->
         <Authors>Marcin Golenia</Authors>
-        <Description>The opinionated F# friendly (I hope so) wrapper around rabbit C# SDK.</Description>
+        <Description>The opinionated F# friendly RabbitMQ client.</Description>
         <RepositoryUrl>https://github.com/marcingolenia/rabbitor</RepositoryUrl>
         <PackageIcon>logo.png</PackageIcon>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-        <PackageReleaseNotes>Alpha</PackageReleaseNotes>
+        <PackageReleaseNotes>
+v.0.0.3
+- Publish-Subscribe messaging
+- Automatic creation of queues and exchanges
+- Rabbit Streams Support
+- Parallel Consumers
+- Single-threaded consumers for in-order processing
+- Easy decorators for rich message consumptions
+        </PackageReleaseNotes>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="Bus.fs" />

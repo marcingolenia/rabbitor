@@ -12,5 +12,6 @@
         <Compile Include="E.fs" />
         <Compile Include="F.fs" />
         <Compile Include="S.fs" />
+        <Compile Include="Z.fs" />
     </ItemGroup>
 </Project>

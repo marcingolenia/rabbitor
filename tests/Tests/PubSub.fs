@@ -55,9 +55,7 @@ let ``Subscribing and handling to published messages using different types of ev
     }
     
 [<Fact>]
-let ``Subscribing and handling to published messages batch works``
-    ()
-    =
+let ``Subscribing and handling to published messages batch works``() =
     // Arrange
     async {
         let mutable actualHandledEvents, promise = [], TaskCompletionSource()

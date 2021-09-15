@@ -7,12 +7,16 @@ open Xunit
 open System.Threading.Tasks
 open FsUnit.Xunit
 open Rabbitor
-
-[<Literal>]
-let ``Seconds to wait for stream write`` = 4_000
-
-// TODO: Figure out how to get rid off that. 
+ 
 let ``Stream handling timeout`` = TimeSpan.FromSeconds 10.0
+
+let rec checkMessagesUntil (bus: Bus) amount =
+    async {
+        if bus.NumberOfMessagesInStream<S.Events>() = amount then ()
+        else
+            do! Async.Sleep 2000
+            do! checkMessagesUntil bus amount
+    }
 
 [<Fact>]
 let ``Stream can be consumed starting with given offset`` () =
@@ -30,7 +34,7 @@ let ``Stream can be consumed starting with given offset`` () =
         let messagesAmount =
             int <| bus.Publication.Channel.MessageCount($"{typeof<S.Events>.FullName}-stream")
         expectedEvents |> List.iter (Bus.publish bus)
-        do! Async.Sleep(``Seconds to wait for stream write``)
+        do! checkMessagesUntil bus (uint32 <| messagesAmount + expectedEvents.Length)
         let handler =
             (fun event ->
                 async {
@@ -64,7 +68,7 @@ let ``When stream is consumed with offset greater than total messages count then
         use bus =
             Bus.connect [ "localhost" ] |> Bus.initStreamedPublisher<S.Events>
         eventsToSend |> List.iter (Bus.publish bus)
-        do! Async.Sleep(``Seconds to wait for stream write``)
+        do! checkMessagesUntil bus ((bus.NumberOfMessagesInStream<S.Events>()) + uint32 eventsToSend.Length)
         let handler =
             (fun _ ->
                 async {

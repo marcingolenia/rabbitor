@@ -1,6 +1,7 @@
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Hosting
+open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
 open Rabbitor
@@ -46,6 +47,7 @@ let configureServices (services: IServiceCollection) = services.AddGiraffe() |> 
 let main _ =
     Host
         .CreateDefaultBuilder()
+        .ConfigureLogging(fun logging -> logging.AddConsole() |> ignore)
         .ConfigureWebHostDefaults(fun webHostBuilder ->
             webHostBuilder
                 .Configure(configureApp)

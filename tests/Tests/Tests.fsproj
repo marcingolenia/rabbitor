@@ -11,12 +11,14 @@
         <Compile Include="CustomJsonSerializer.fs" />
         <Compile Include="Streams.fs" />
         <Compile Include="RetryDecorator.fs" />
+        <Compile Include="CustomDecorators.fs" />
         <Compile Include="Learning.ThreadIssues.fs" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="FsUnit.xUnit" Version="4.0.5" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
         <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
+        <PackageReference Include="Thoth.Json.Net" Version="7.0.0" />
         <PackageReference Include="xunit" Version="2.4.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

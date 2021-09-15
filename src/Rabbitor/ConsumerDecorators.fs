@@ -30,9 +30,4 @@ let measureTime next event =
         return result
     }
 
-let defaultDecors () = [ retry 3; measureTime ]
-
-let handleWithDecors handler decors = (decors |> List.reduceBack (>>)) handler
-
-let handleDefault handler =
-    defaultDecors () |> handleWithDecors handler
+let decorate decors handler = (decors |> List.rev |> List.reduce (>>)) handler
