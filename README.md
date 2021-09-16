@@ -67,7 +67,7 @@ Start the bus near Your application entry-point and init the publisher.
 
 ```fsharp
 let bus = Bus.connect ["localhost"]
-         |> Bus.initPublisher<CrimeNotifications>
+          |> Bus.initPublisher<CrimeNotifications>
 ```
 
 If service A is only publishing messages, You are ready. How to manage the bus dependency is Your concern. You can register it as a single instance if You use dependency injection or just pass it to composition root to include it as a dependency. There is also a simple example in the repository, where the bus is passed down to the Giraffe HttpHandler. Publishing messages is as easy as:
@@ -197,7 +197,9 @@ To make the topology not Your concern, Rabbitor uses following convention to set
 2. Stream Queues are created upon `Bus.initStreamedPublisher<'a>` using the full type name of `<'a>`.
 3. Plain queues are created upon `Bus.subscribe<'a>` or parallel equivalent using the executing assembly name and full type name of `<'a>`, which allow multiple subscriptions per topic. 
 
-At the moment it is not possible to override the convention.
+At the moment it is not possible to override the convention. 
+
+*I am hinking about removing the exchange creation, so the initPublisher function. When no queue exists, messages won't be published, that is why it the exchange can be created upon queue creation.*
 
 ## 3. Connection to RabbitMQ
 Rabbitor uses official RabbitMQ .net client underneath and tries to not get into Your way to much. You can pass custom connection factory if You want using `Bus.customConnect` function 
