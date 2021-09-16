@@ -183,7 +183,11 @@ use bus =
 
 Bus.serializeAndPublish bus mySerialize event
 ```
-again, consider using partial application to simplify usage later on.
+where
+1. `mySerialize` is a function `'a -> string `
+2. `myDeserialize` is a function `string -> 'a`
+
+Again, consider using partial application to simplify usage later on.
 
 *You can also play with related tests from the source code: Tests -> CustomJsonSerializer.fs*
 
