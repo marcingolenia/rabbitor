@@ -153,7 +153,7 @@ let measureTimeDecorator next event =
         return result
     }
 ```
-now it is enough to add it to the decorators list and pass it to decorate function (or compose it by yourself). You can pass as many decorators as You want, the execution order conforms to the order in the array, so:
+now it is enough to add it to the decorators list and pass it to decorate function (or compose it by yourself). You can pass as many decorators as You want, the execution order conforms to the order in the list, so:
 ```fsharp
 ...
 |>  Bus.subscribe<F.Whatever7> (handler |> decorate [ decorator1; decorator2])
@@ -192,17 +192,17 @@ Again, consider using partial application to simplify usage later on.
 *You can also play with related tests from the source code: Tests -> CustomJsonSerializer.fs*
 
 ## 2. Queues and Exchanges topology convention
-To make the topology not Your concern, Rabbitor uses following convention to setup queues and exchanges for You:
+To make the topology not Your concern, Rabbitor uses the following convention to set up queues and exchanges for You:
 1. Exchanges are created upon `Bus.initPublisher<'a>` using the full type name of `<'a>`.
 2. Stream Queues are created upon `Bus.initStreamedPublisher<'a>` using the full type name of `<'a>`.
 3. Plain queues are created upon `Bus.subscribe<'a>` or parallel equivalent using the executing assembly name and full type name of `<'a>`, which allow multiple subscriptions per topic. 
 
 At the moment it is not possible to override the convention. 
 
-*I am hinking about removing the exchange creation, so the initPublisher function. When no queue exists, messages won't be published, that is why it the exchange can be created upon queue creation.*
+*I am thinking about removing the exchange creation, so the initPublisher function. When no queue exists, messages won't be published, that is why it the exchange can be created upon queue creation.*
 
 ## 3. Connection to RabbitMQ
-Rabbitor uses official RabbitMQ .net client underneath and tries to not get into Your way to much. You can pass custom connection factory if You want using `Bus.customConnect` function 
+Rabbitor uses official RabbitMQ .net client underneath and tries not to get into Your way too much. You can pass custom connection factory if You want using `Bus.customConnect` function 
 `(unit -> ConnectionFactory) -> string list -> Bus`
 where [ConnectionFactory is .net RabbitMQ library type](https://www.rabbitmq.com/dotnet-api-guide.html#connecting). Here You can setup password, use configure certificates, override connection recovery settings. Rabbitor uses defaults. 
 
