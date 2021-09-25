@@ -3,7 +3,8 @@
         <TargetFramework>net5.0</TargetFramework>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <PackageId>Rabbitor</PackageId>
-        <VersionPrefix>0.0.3</VersionPrefix>
+        <VersionPrefix>0.0.4</VersionPrefix>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
 <!--        <VersionSuffix>alpha</VersionSuffix>-->
         <Authors>Marcin Golenia</Authors>
         <Description>The opinionated F# friendly RabbitMQ client.</Description>
@@ -11,6 +12,8 @@
         <PackageIcon>logo.png</PackageIcon>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <PackageReleaseNotes>
+v.0.0.4
+- Add README.md to nuget            
 v.0.0.3
 - Publish-Subscribe messaging
 - Automatic creation of queues and exchanges
@@ -25,6 +28,7 @@ v.0.0.3
         <Compile Include="ConsumerDecorators.fs" />
         <None Include="../../logo.png" Pack="true" PackagePath="/" />
         <None Include="../../LICENSE.md" Pack="true" PackagePath="/" />
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
